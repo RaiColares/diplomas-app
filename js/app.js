@@ -61,7 +61,7 @@ function renderDiplomas(data) {
     return;
   }
   tableBody.innerHTML = data.map(d => `
-    <tr data-numero="${escapeAttr(d.Número || "")}" data-nome="${escapeAttr(d["Nome do Aluno"] || "")}" data-turno="${escapeAttr(d.Turno || "")}" data-curso="${escapeAttr(d.Curso || "")}" data-modalidade="${escapeAttr(d.Modalidade || "")}" data-anoentrada="${escapeAttr(d["Ano de Entrada"] || "")}" data-anoconclusao="${escapeAttr(d["Ano de Conclusão"] || "")}" data-datarecebimento="${escapeAttr(d["Data de Recebimento"] || "")}" data-observacao="${escapeAttr(d.Observação || "")}">
+    <tr data-numero="${escapeAttr(d.Número || "")}" data-nome="${escapeAttr(d["Nome do Aluno"] || "")}" data-turno="${escapeAttr(d.Turno || "")}" data-curso="${escapeAttr(d.Curso || "")}" data-modalidade="${escapeAttr(d.Modalidade || "")}" data-anoentrada="${escapeAttr(d["Ano de Entrada"] || "")}" data-anoconclusao="${escapeAttr(d["Ano de Conclusão"] || "")}" data-datarecebimento="${escapeAttr(d["Data de Recebimento"] || "")}" data-observacao="${escapeAttr(d["Observação"] || "")}">
       <td class="td-numero">${esc(d.Número || "")}</td>
       <td class="td-nome">${esc(d["Nome do Aluno"] || "")}</td>
       <td class="td-turno">${esc(d.Turno || "")}</td>
@@ -70,7 +70,7 @@ function renderDiplomas(data) {
       <td class="td-anoEntrada">${esc(d["Ano de Entrada"] || "")}</td>
       <td class="td-anoConclusao">${esc(d["Ano de Conclusão"] || "")}</td>
       <td class="td-dataRecebimento">${esc(formatDateBR(d["Data de Recebimento"]))}</td>
-      <td class="td-observacao">${esc(d.Observação || "")}</td>
+      <td class="td-observacao">${esc(d["Observação"] || "")}</td>
       <td class="td-acoes">
         <button class="action-btn btn-edit" onclick="window.editRow(this)">Editar</button>
         <button class="action-btn btn-delete" onclick="window.deleteRow(this)">Excluir</button>
@@ -107,7 +107,7 @@ window.editRow = function(btn) {
   document.getElementById("editAnoEntrada").value = d.anoentrada;
   document.getElementById("editAnoConclusao").value = d.anoconclusao;
   document.getElementById("editDataRecebimento").value = formatDateISO(d.datarecebimento);
-  document.getElementById("editObservacao").value = d.observacao;
+  document.getElementById("editObservacao").value = tr.getAttribute("data-observacao") || "";
 
   openModal();
 };
@@ -125,10 +125,7 @@ window.saveEdit = async function() {
     observacao: document.getElementById("editObservacao").value.trim()
   };
 
-  if (!data.nome || !data.curso) {
-    showMessage("Campos obrigatórios: Nome e Curso.", "error");
-    return;
-  }
+  if (!validateForm(data)) return;
 
   const btn = document.getElementById("btnSaveEdit");
   btn.disabled = true;
@@ -171,6 +168,32 @@ window.deleteRow = async function(btn) {
   }
 };
 
+function validateForm(data) {
+  const fields = [
+    { key: "numero", label: "Número do Diploma" },
+    { key: "nome", label: "Nome do Aluno" },
+    { key: "turno", label: "Turno" },
+    { key: "curso", label: "Curso" },
+    { key: "modalidade", label: "Modalidade" },
+    { key: "anoEntrada", label: "Ano de Entrada" },
+    { key: "anoConclusao", label: "Ano de Conclusão" }
+  ];
+
+  for (const f of fields) {
+    if (!data[f.key]) {
+      showMessage(`Campo obrigatório: ${f.label}`, "error");
+      return false;
+    }
+  }
+
+  if (!/^\d+$/.test(data.numero)) {
+    showMessage("Número do diploma deve conter apenas dígitos.", "error");
+    return false;
+  }
+
+  return true;
+}
+
 function showMessage(text, type) {
   const msg = document.getElementById("message");
   if (!msg) return;
@@ -200,12 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
         observacao: document.getElementById("observacao").value.trim()
       };
 
-      if (!data.numero || !data.nome || !data.curso) {
-        msg.className = "message error";
-        msg.textContent = "Preencha os campos obrigatórios: Número, Nome e Curso.";
-        msg.style.display = "block";
-        return;
-      }
+      if (!validateForm(data)) return;
 
       const btn = form.querySelector("button");
       btn.disabled = true;

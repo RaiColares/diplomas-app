@@ -21,7 +21,7 @@
         <div class="form-row">
           <div class="form-group">
             <label for="numero">Número do Diploma *</label>
-            <input type="text" id="numero" required>
+            <input type="text" id="numero" inputmode="numeric" pattern="[0-9]+" title="Apenas números" required>
           </div>
           <div class="form-group">
             <label for="nome">Nome do Aluno *</label>
@@ -31,8 +31,8 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="turno">Turno</label>
-            <select id="turno">
+            <label for="turno">Turno *</label>
+            <select id="turno" required>
               <option value="">Selecione...</option>
               <option value="Manhã">Manhã</option>
               <option value="Tarde">Tarde</option>
@@ -47,8 +47,8 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="modalidade">Modalidade</label>
-            <select id="modalidade">
+            <label for="modalidade">Modalidade *</label>
+            <select id="modalidade" required>
               <option value="">Selecione...</option>
               <option value="Integrado">Integrado</option>
               <option value="Subsequente">Subsequente</option>
@@ -56,15 +56,15 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="anoEntrada">Ano de Entrada</label>
-            <input type="number" id="anoEntrada" min="1900" max="2099">
+            <label for="anoEntrada">Ano de Entrada *</label>
+            <input type="text" id="anoEntrada" inputmode="numeric" pattern="[0-9]{4}" title="Apenas 4 dígitos" placeholder="AAAA" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="anoConclusao">Ano de Conclusão</label>
-            <input type="number" id="anoConclusao" min="1900" max="2099">
+            <label for="anoConclusao">Ano de Conclusão *</label>
+            <input type="text" id="anoConclusao" inputmode="numeric" pattern="[0-9]{4}" title="Apenas 4 dígitos" placeholder="AAAA" required>
           </div>
           <div class="form-group">
             <label for="dataRecebimento">Data de Recebimento</label>
