@@ -80,6 +80,10 @@ input, select, textarea {
   transition: border-color 0.3s;
 }
 
+input[type="text"] {
+  text-transform: uppercase;
+}
+
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #667eea;

@@ -34,7 +34,7 @@ function salvarCursosPersonalizados(lista) {
 }
 
 function getTodosCursos() {
-  return [...CURSOS_FIXOS, ...getCursosPersonalizados()];
+  return [...CURSOS_FIXOS, ...getCursosPersonalizados()].sort();
 }
 
 function carregarSelectCursos(selectId, placeholder, incluirAdicionar) {
@@ -308,6 +308,12 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarTodosSelectsCursos();
   configurarCursoSelect("curso", "cursoCustom");
   configurarCursoSelect("editCurso", "editCursoCustom");
+
+  document.querySelectorAll('input[type="text"]').forEach(input => {
+    input.addEventListener("input", () => {
+      input.value = input.value.toUpperCase();
+    });
+  });
 
   const form = document.getElementById("alunoForm");
   if (form) {
