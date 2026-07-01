@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyMsXfYeDy-Dz6jbAIzp-lk4AghLkF5-gWytqfkK_OK4jgktNoYpvO_wKliACseh0SO/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzWfPle_9c2tou9kPPva4E7BodCXxZwY7i6JP8ptglQEsk6IcavLuZ8dkiaEJXRT78g/exec";
 const API_KEY = "appcadastro123";
 
 const COLSPAN = 6;
