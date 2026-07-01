@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzWNceo_T5BITEHT3RF79EGR6DnVXBlDemVow3dpkcX6dZQe-66SZB9bzJAVtA2ZP2i/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyMsXfYeDy-Dz6jbAIzp-lk4AghLkF5-gWytqfkK_OK4jgktNoYpvO_wKliACseh0SO/exec";
 const API_KEY = "appcadastro123";
 
 function formatDateBR(val) {
