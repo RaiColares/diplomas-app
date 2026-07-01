@@ -77,6 +77,59 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  const action = e.parameter._action || "create";
+
+  if (action === "delete") {
+    const numero = e.parameter.numero;
+    if (!numero) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: "Numero obrigatorio para exclusao" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues();
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (String(data[i][0]) === String(numero)) {
+        sheet.deleteRow(i + 1);
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: true, message: "Diploma excluido!" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: "Diploma nao encontrado" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (action === "update") {
+    const { numero, nome, turno, curso, modalidade, anoEntrada, anoConclusao, dataRecebimento, observacao } = e.parameter;
+    if (!numero || !nome || !curso) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: "Campos obrigatorios: numero, nome, curso" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(numero)) {
+        const row = i + 1;
+        sheet.getRange(row, 1).setValue(numero);
+        sheet.getRange(row, 2).setValue(nome);
+        sheet.getRange(row, 3).setValue(turno || "");
+        sheet.getRange(row, 4).setValue(curso);
+        sheet.getRange(row, 5).setValue(modalidade || "");
+        sheet.getRange(row, 6).setValue(anoEntrada || "");
+        sheet.getRange(row, 7).setValue(anoConclusao || "");
+        sheet.getRange(row, 8).setValue(dataRecebimento || "");
+        sheet.getRange(row, 9).setValue(observacao || "");
+        return ContentService
+          .createTextOutput(JSON.stringify({ success: true, message: "Diploma atualizado!" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: "Diploma nao encontrado" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const { numero, nome, turno, curso, modalidade, anoEntrada, anoConclusao, dataRecebimento, observacao } = e.parameter;
 
   if (!numero || !nome || !curso) {

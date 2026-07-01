@@ -8,6 +8,15 @@ function formatDateBR(dateStr) {
   return d.toLocaleDateString("pt-BR");
 }
 
+function formatDateISO(dateStr) {
+  if (!dateStr) return "";
+  const parts = dateStr.split("/");
+  if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
+  return dateStr;
+}
+
+const COLSPAN = 10;
+
 async function submitDiploma(data) {
   const params = new URLSearchParams({ key: API_KEY, ...data });
   const res = await fetch(API_URL, {
@@ -24,6 +33,173 @@ async function fetchDiplomas(paramsObj = {}) {
   const params = new URLSearchParams({ key: API_KEY, ...paramsObj });
   const res = await fetch(`${API_URL}?${params}`);
   return res.json();
+}
+
+async function deleteDiploma(numero) {
+  const params = new URLSearchParams({ key: API_KEY, _action: "delete", numero });
+  const res = await fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params
+  });
+  if (res.type === "opaque") return { success: true };
+  return res.json();
+}
+
+async function updateDiploma(data) {
+  const params = new URLSearchParams({ key: API_KEY, _action: "update", ...data });
+  const res = await fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params
+  });
+  if (res.type === "opaque") return { success: true };
+  return res.json();
+}
+
+const TURNOS = ["Manhã", "Tarde", "Noite"];
+const MODALIDADES = ["Integrado", "Subsequente", "Ejatec"];
+
+function createSelect(value, options) {
+  const sel = document.createElement("select");
+  options.forEach(opt => {
+    const el = document.createElement("option");
+    el.value = opt;
+    el.textContent = opt;
+    if (opt === value) el.selected = true;
+    sel.appendChild(el);
+  });
+  return sel;
+}
+
+function renderDiplomas(data) {
+  const tableBody = document.getElementById("tableBody");
+  if (!tableBody) return;
+  if (data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Nenhum diploma encontrado.</td></tr>`;
+    return;
+  }
+  tableBody.innerHTML = data.map(d => `
+    <tr data-numero="${escapeAttr(d.Número || "")}" data-nome="${escapeAttr(d["Nome do Aluno"] || "")}" data-turno="${escapeAttr(d.Turno || "")}" data-curso="${escapeAttr(d.Curso || "")}" data-modalidade="${escapeAttr(d.Modalidade || "")}" data-anoentrada="${escapeAttr(d["Ano de Entrada"] || "")}" data-anoconclusao="${escapeAttr(d["Ano de Conclusão"] || "")}" data-datarecebimento="${escapeAttr(d["Data de Recebimento"] || "")}" data-observacao="${escapeAttr(d.Observação || "")}">
+      <td class="td-numero">${esc(d.Número || "")}</td>
+      <td class="td-nome">${esc(d["Nome do Aluno"] || "")}</td>
+      <td class="td-turno">${esc(d.Turno || "")}</td>
+      <td class="td-curso">${esc(d.Curso || "")}</td>
+      <td class="td-modalidade">${esc(d.Modalidade || "")}</td>
+      <td class="td-anoEntrada">${esc(d["Ano de Entrada"] || "")}</td>
+      <td class="td-anoConclusao">${esc(d["Ano de Conclusão"] || "")}</td>
+      <td class="td-dataRecebimento">${esc(formatDateBR(d["Data de Recebimento"]))}</td>
+      <td class="td-observacao">${esc(d.Observação || "")}</td>
+      <td class="td-acoes">
+        <button class="action-btn btn-edit" onclick="window.editRow(this)">Editar</button>
+        <button class="action-btn btn-delete" onclick="window.deleteRow(this)">Excluir</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function esc(str) {
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+window.editRow = function(btn) {
+  const tr = btn.closest("tr");
+  if (tr.classList.contains("editing")) return;
+
+  const fields = ["nome", "turno", "curso", "modalidade", "anoEntrada", "anoConclusao", "dataRecebimento", "observacao"];
+  const labels = {
+    nome: "Nome do Aluno", turno: "Turno", curso: "Curso",
+    modalidade: "Modalidade", anoEntrada: "Ano de Entrada",
+    anoConclusao: "Ano de Conclusão", dataRecebimento: "Data de Recebimento", observacao: "Observação"
+  };
+
+  fields.forEach(f => {
+    const td = tr.querySelector(`.td-${f}`);
+    const val = tr.dataset[f] || "";
+    if (f === "turno") {
+      td.innerHTML = "";
+      td.appendChild(createSelect(val, TURNOS));
+    } else if (f === "modalidade") {
+      td.innerHTML = "";
+      td.appendChild(createSelect(val, MODALIDADES));
+    } else {
+      const input = document.createElement("input");
+      input.type = f === "anoEntrada" || f === "anoConclusao" ? "text" : "text";
+      input.value = f === "dataRecebimento" ? formatDateISO(val) : val;
+      if (f === "anoEntrada" || f === "anoConclusao") input.placeholder = "AAAA";
+      td.innerHTML = "";
+      td.appendChild(input);
+    }
+  });
+
+  const acoes = tr.querySelector(".td-acoes");
+  acoes.innerHTML = `
+    <button class="action-btn btn-save" onclick="window.saveRow(this)">Salvar</button>
+    <button class="action-btn btn-cancel" onclick="window.cancelEdit(this)">Cancelar</button>
+  `;
+  tr.classList.add("editing");
+};
+
+window.saveRow = async function(btn) {
+  const tr = btn.closest("tr");
+  const numero = tr.dataset.numero;
+
+  const data = { numero };
+  const fields = ["nome", "turno", "curso", "modalidade", "anoEntrada", "anoConclusao", "dataRecebimento", "observacao"];
+
+  fields.forEach(f => {
+    const td = tr.querySelector(`.td-${f}`);
+    const input = td.querySelector("input, select");
+    if (input) data[f] = input.value.trim();
+  });
+
+  if (!data.nome || !data.curso) {
+    showMessage("Campos obrigatórios: Nome e Curso.", "error");
+    return;
+  }
+
+  try {
+    await updateDiploma(data);
+    showMessage("Diploma atualizado com sucesso!", "success");
+    loadDiplomas();
+  } catch (err) {
+    showMessage("Erro ao atualizar. Tente novamente.", "error");
+  }
+};
+
+window.cancelEdit = function(btn) {
+  loadDiplomas();
+};
+
+window.deleteRow = async function(btn) {
+  const tr = btn.closest("tr");
+  const nome = tr.dataset.nome;
+  const numero = tr.dataset.numero;
+
+  if (!confirm(`Tem certeza que deseja excluir o diploma de "${nome}"?`)) return;
+
+  try {
+    await deleteDiploma(numero);
+    showMessage("Diploma excluído com sucesso!", "success");
+    loadDiplomas();
+  } catch (err) {
+    showMessage("Erro ao excluir. Tente novamente.", "error");
+  }
+};
+
+function showMessage(text, type) {
+  const msg = document.getElementById("message");
+  if (!msg) return;
+  msg.className = `message ${type}`;
+  msg.textContent = text;
+  msg.style.display = "block";
+  setTimeout(() => msg.style.display = "none", 5000);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -58,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.textContent = "Enviando...";
 
       try {
-        const result = await submitDiploma(data);
+        await submitDiploma(data);
         msg.className = "message success";
         msg.textContent = "Diploma cadastrado com sucesso!";
         msg.style.display = "block";
@@ -84,15 +260,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchAno = document.getElementById("searchAno");
   const tableBody = document.getElementById("tableBody");
 
-  searchType.addEventListener("change", () => {
-    if (searchType.value === "nome") {
-      searchNomeField.style.display = "flex";
-      searchCursoAnoField.style.display = "none";
-    } else {
-      searchNomeField.style.display = "none";
-      searchCursoAnoField.style.display = "flex";
-    }
-  });
+  if (searchType) {
+    searchType.addEventListener("change", () => {
+      if (searchType.value === "nome") {
+        searchNomeField.style.display = "flex";
+        searchCursoAnoField.style.display = "none";
+      } else {
+        searchNomeField.style.display = "none";
+        searchCursoAnoField.style.display = "flex";
+      }
+    });
+  }
 
   function buildSearchParams() {
     if (searchType.value === "nome") {
@@ -110,35 +288,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadDiplomas(paramsObj = null) {
-    if (tableBody) tableBody.innerHTML = '<tr><td colspan="9">Carregando...</td></tr>';
+    if (tableBody) tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Carregando...</td></tr>`;
     try {
       const data = paramsObj ? await fetchDiplomas(paramsObj) : await fetchDiplomas();
       if (!tableBody) return;
       if (data.error) {
-        tableBody.innerHTML = `<tr><td colspan="9">Erro: ${data.error}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Erro: ${data.error}</td></tr>`;
         return;
       }
-      if (data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="9">Nenhum diploma encontrado.</td></tr>';
-        return;
-      }
-      tableBody.innerHTML = data.map(d => `
-        <tr>
-          <td>${d.Número || ""}</td>
-          <td>${d["Nome do Aluno"] || ""}</td>
-          <td>${d.Turno || ""}</td>
-          <td>${d.Curso || ""}</td>
-          <td>${d.Modalidade || ""}</td>
-          <td>${d["Ano de Entrada"] || ""}</td>
-          <td>${d["Ano de Conclusão"] || ""}</td>
-          <td>${formatDateBR(d["Data de Recebimento"])}</td>
-          <td>${d.Observação || ""}</td>
-        </tr>
-      `).join("");
+      renderDiplomas(data);
     } catch (err) {
-      if (tableBody) tableBody.innerHTML = '<tr><td colspan="9">Erro ao carregar dados.</td></tr>';
+      if (tableBody) tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Erro ao carregar dados.</td></tr>`;
     }
   }
+
+  window.loadDiplomas = loadDiplomas;
 
   if (btnAll) btnAll.addEventListener("click", () => loadDiplomas());
   if (btnSearch) {
