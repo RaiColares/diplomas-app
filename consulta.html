@@ -27,7 +27,7 @@
         </div>
         <div id="searchCursoAnoField" class="search-field" style="display:none">
           <input type="text" id="searchCurso" placeholder="Nome do curso...">
-          <input type="number" id="searchAno" placeholder="Ano de entrada...">
+          <input type="text" id="searchAno" placeholder="Ano de entrada...">
         </div>
         <button id="btnSearch">Buscar</button>
         <button id="btnAll">Listar Todos</button>
@@ -55,6 +55,78 @@
 
       <div id="message" class="message"></div>
     </main>
+  </div>
+
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <h2>Editar Diploma</h2>
+      <form id="editForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editNumero">Número do Diploma</label>
+            <input type="text" id="editNumero" readonly>
+          </div>
+          <div class="form-group">
+            <label for="editNome">Nome do Aluno *</label>
+            <input type="text" id="editNome" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editTurno">Turno</label>
+            <select id="editTurno">
+              <option value="">Selecione...</option>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editCurso">Curso *</label>
+            <input type="text" id="editCurso" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editModalidade">Modalidade</label>
+            <select id="editModalidade">
+              <option value="">Selecione...</option>
+              <option value="Integrado">Integrado</option>
+              <option value="Subsequente">Subsequente</option>
+              <option value="Ejatec">Ejatec</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editAnoEntrada">Ano de Entrada</label>
+            <input type="text" id="editAnoEntrada" placeholder="AAAA">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editAnoConclusao">Ano de Conclusão</label>
+            <input type="text" id="editAnoConclusao" placeholder="AAAA">
+          </div>
+          <div class="form-group">
+            <label for="editDataRecebimento">Data de Recebimento</label>
+            <input type="date" id="editDataRecebimento">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editObservacao">Observação</label>
+          <textarea id="editObservacao" rows="3"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" id="btnSaveEdit">Salvar Alterações</button>
+          <button type="button" id="btnCancelEdit" class="btn-secondary">Cancelar</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="js/app.js"></script>

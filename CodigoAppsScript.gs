@@ -80,7 +80,17 @@ function doPost(e) {
 
 function mapRow(headers, row) {
   const obj = {};
-  headers.forEach((h, i) => obj[h] = row[i]);
+  headers.forEach((h, i) => {
+    const val = row[i];
+    if (val instanceof Date) {
+      const y = val.getFullYear();
+      const m = String(val.getMonth() + 1).padStart(2, "0");
+      const d = String(val.getDate()).padStart(2, "0");
+      obj[h] = `${y}-${m}-${d}`;
+    } else {
+      obj[h] = val;
+    }
+  });
   return obj;
 }
 

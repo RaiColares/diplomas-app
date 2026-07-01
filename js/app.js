@@ -53,21 +53,6 @@ async function fetchDiplomas(paramsObj = {}) {
   return apiCall(paramsObj);
 }
 
-const TURNOS = ["Manhã", "Tarde", "Noite"];
-const MODALIDADES = ["Integrado", "Subsequente", "Ejatec"];
-
-function createSelect(value, options) {
-  const sel = document.createElement("select");
-  options.forEach(opt => {
-    const el = document.createElement("option");
-    el.value = opt;
-    el.textContent = opt;
-    if (opt === value) el.selected = true;
-    sel.appendChild(el);
-  });
-  return sel;
-}
-
 function renderDiplomas(data) {
   const tableBody = document.getElementById("tableBody");
   if (!tableBody) return;
@@ -102,56 +87,52 @@ function esc(str) {
   return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function openModal() {
+  document.getElementById("editModal").classList.add("show");
+}
+
+function closeModal() {
+  document.getElementById("editModal").classList.remove("show");
+}
+
 window.editRow = function(btn) {
   const tr = btn.closest("tr");
-  if (tr.classList.contains("editing")) return;
+  const d = tr.dataset;
 
-  const fields = ["nome", "turno", "curso", "modalidade", "anoEntrada", "anoConclusao", "dataRecebimento", "observacao"];
+  document.getElementById("editNumero").value = d.numero;
+  document.getElementById("editNome").value = d.nome;
+  document.getElementById("editTurno").value = d.turno;
+  document.getElementById("editCurso").value = d.curso;
+  document.getElementById("editModalidade").value = d.modalidade;
+  document.getElementById("editAnoEntrada").value = d.anoentrada;
+  document.getElementById("editAnoConclusao").value = d.anoconclusao;
+  document.getElementById("editDataRecebimento").value = formatDateISO(d.datarecebimento);
+  document.getElementById("editObservacao").value = d.observacao;
 
-  fields.forEach(f => {
-    const td = tr.querySelector(`.td-${f}`);
-    const val = tr.dataset[f] || "";
-    if (f === "turno") {
-      td.innerHTML = "";
-      td.appendChild(createSelect(val, TURNOS));
-    } else if (f === "modalidade") {
-      td.innerHTML = "";
-      td.appendChild(createSelect(val, MODALIDADES));
-    } else {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = f === "dataRecebimento" ? formatDateISO(val) : val;
-      if (f === "anoEntrada" || f === "anoConclusao") input.placeholder = "AAAA";
-      td.innerHTML = "";
-      td.appendChild(input);
-    }
-  });
-
-  const acoes = tr.querySelector(".td-acoes");
-  acoes.innerHTML = `
-    <button class="action-btn btn-save" onclick="window.saveRow(this)">Salvar</button>
-    <button class="action-btn btn-cancel" onclick="window.cancelEdit(this)">Cancelar</button>
-  `;
-  tr.classList.add("editing");
+  openModal();
 };
 
-window.saveRow = async function(btn) {
-  const tr = btn.closest("tr");
-  const numero = tr.dataset.numero;
-
-  const data = { numero };
-  const fields = ["nome", "turno", "curso", "modalidade", "anoEntrada", "anoConclusao", "dataRecebimento", "observacao"];
-
-  fields.forEach(f => {
-    const td = tr.querySelector(`.td-${f}`);
-    const input = td.querySelector("input, select");
-    if (input) data[f] = input.value.trim();
-  });
+window.saveEdit = async function() {
+  const data = {
+    numero: document.getElementById("editNumero").value.trim(),
+    nome: document.getElementById("editNome").value.trim(),
+    turno: document.getElementById("editTurno").value,
+    curso: document.getElementById("editCurso").value.trim(),
+    modalidade: document.getElementById("editModalidade").value,
+    anoEntrada: document.getElementById("editAnoEntrada").value.trim(),
+    anoConclusao: document.getElementById("editAnoConclusao").value.trim(),
+    dataRecebimento: document.getElementById("editDataRecebimento").value,
+    observacao: document.getElementById("editObservacao").value.trim()
+  };
 
   if (!data.nome || !data.curso) {
     showMessage("Campos obrigatórios: Nome e Curso.", "error");
     return;
   }
+
+  const btn = document.getElementById("btnSaveEdit");
+  btn.disabled = true;
+  btn.textContent = "Salvando...";
 
   try {
     const result = await updateDiploma(data);
@@ -160,14 +141,14 @@ window.saveRow = async function(btn) {
       return;
     }
     showMessage("Diploma atualizado com sucesso!", "success");
+    closeModal();
     loadDiplomas();
   } catch (err) {
     showMessage("Erro ao atualizar. Tente novamente.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Salvar Alterações";
   }
-};
-
-window.cancelEdit = function() {
-  loadDiplomas();
 };
 
 window.deleteRow = async function(btn) {
@@ -323,4 +304,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if (btnAll) loadDiplomas();
+
+  // Modal event listeners
+  const editForm = document.getElementById("editForm");
+  if (editForm) {
+    editForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      window.saveEdit();
+    });
+  }
+
+  document.getElementById("btnCancelEdit")?.addEventListener("click", closeModal);
+
+  document.querySelector(".modal-close")?.addEventListener("click", closeModal);
+
+  document.getElementById("editModal")?.addEventListener("click", (e) => {
+    if (e.target === document.getElementById("editModal")) closeModal();
+  });
 });
