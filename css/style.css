@@ -21,9 +21,10 @@ body {
 }
 
 header {
-  background: #2c3e50;
-  color: #fff;
+  background: #fff;
+  color: #667eea;
   padding: 20px 30px;
+  border-bottom: 3px solid #667eea;
 }
 
 .header-top {
@@ -34,7 +35,7 @@ header {
 }
 
 .header-logo {
-  height: 40px;
+  height: 56px;
   width: auto;
 }
 
@@ -49,7 +50,7 @@ nav {
 }
 
 nav a {
-  color: #ccc;
+  color: #555;
   text-decoration: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -57,7 +58,7 @@ nav a {
 }
 
 nav a:hover, nav a.active {
-  background: #34495e;
+  background: #667eea;
   color: #fff;
 }
 
