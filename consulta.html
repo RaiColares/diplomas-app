@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultar Diplomas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sistema de Cadastro de Diplomas</h1>
+      <nav>
+        <a href="index.html">Cadastro</a>
+        <a href="consulta.html" class="active">Consultar Diplomas</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="search-box">
+        <select id="searchType">
+          <option value="nome">Buscar por Nome</option>
+          <option value="cursoAno">Buscar por Curso + Ano</option>
+        </select>
+        <div id="searchNomeField" class="search-field">
+          <input type="text" id="searchNome" placeholder="Digite o nome do aluno...">
+        </div>
+        <div id="searchCursoAnoField" class="search-field" style="display:none">
+          <input type="text" id="searchCurso" placeholder="Nome do curso...">
+          <input type="number" id="searchAno" placeholder="Ano de entrada...">
+        </div>
+        <button id="btnSearch">Buscar</button>
+        <button id="btnAll">Listar Todos</button>
+      </div>
+
+      <div id="results">
+        <table id="diplomasTable">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Nome</th>
+              <th>Turno</th>
+              <th>Curso</th>
+              <th>Modalidade</th>
+              <th>Ano Entrada</th>
+              <th>Ano Conclusão</th>
+              <th>Data Recebimento</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="message" class="message"></div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

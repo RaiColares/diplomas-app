@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Diplomas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sistema de Cadastro de Diplomas</h1>
+      <nav>
+        <a href="index.html" class="active">Cadastro</a>
+        <a href="consulta.html">Consultar Diplomas</a>
+      </nav>
+    </header>
+
+    <main>
+      <form id="diplomaForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="numero">Número do Diploma *</label>
+            <input type="text" id="numero" required>
+          </div>
+          <div class="form-group">
+            <label for="nome">Nome do Aluno *</label>
+            <input type="text" id="nome" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="turno">Turno</label>
+            <select id="turno">
+              <option value="">Selecione...</option>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="curso">Curso *</label>
+            <input type="text" id="curso" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalidade">Modalidade</label>
+            <select id="modalidade">
+              <option value="">Selecione...</option>
+              <option value="Integrado">Integrado</option>
+              <option value="Subsequente">Subsequente</option>
+              <option value="Ejatec">Ejatec</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="anoEntrada">Ano de Entrada</label>
+            <input type="number" id="anoEntrada" min="1900" max="2099">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="anoConclusao">Ano de Conclusão</label>
+            <input type="number" id="anoConclusao" min="1900" max="2099">
+          </div>
+          <div class="form-group">
+            <label for="dataRecebimento">Data de Recebimento</label>
+            <input type="date" id="dataRecebimento">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="observacao">Observação</label>
+          <textarea id="observacao" rows="3"></textarea>
+        </div>
+
+        <button type="submit">Cadastrar Diploma</button>
+      </form>
+
+      <div id="message" class="message"></div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
