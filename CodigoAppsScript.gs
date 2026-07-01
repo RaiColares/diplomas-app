@@ -47,12 +47,12 @@ function doGet(e) {
   }
 
   const data = sheet.getDataRange().getValues();
-  const headers = data.shift();
+  data.shift();
 
   if (e.parameter.nome) {
     const termo = e.parameter.nome.toLowerCase();
     const filtered = data.filter(row => String(row[1]).toLowerCase().includes(termo));
-    return respond(filtered.map(row => mapRow(headers, row)));
+    return respond(filtered.map(row => mapRow(row)));
   }
 
   if (e.parameter.curso) {
@@ -63,10 +63,10 @@ function doGet(e) {
       const matchAno = !termoAno || String(row[5]) === termoAno;
       return matchCurso && matchAno;
     });
-    return respond(filtered.map(row => mapRow(headers, row)));
+    return respond(filtered.map(row => mapRow(row)));
   }
 
-  return respond(data.map(row => mapRow(headers, row)));
+  return respond(data.map(row => mapRow(row)));
 }
 
 function doPost(e) {
@@ -78,20 +78,24 @@ function doPost(e) {
   return doGet({ parameter: params });
 }
 
-function mapRow(headers, row) {
-  const obj = {};
-  headers.forEach((h, i) => {
-    const val = row[i];
+function mapRow(row) {
+  function fmtDate(val) {
     if (val instanceof Date) {
-      const y = val.getFullYear();
-      const m = String(val.getMonth() + 1).padStart(2, "0");
-      const d = String(val.getDate()).padStart(2, "0");
-      obj[h] = `${y}-${m}-${d}`;
-    } else {
-      obj[h] = val;
+      return Utilities.formatDate(val, "GMT-3", "yyyy-MM-dd");
     }
-  });
-  return obj;
+    return val || "";
+  }
+  return {
+    "Número": row[0] || "",
+    "Nome do Aluno": row[1] || "",
+    "Turno": row[2] || "",
+    "Curso": row[3] || "",
+    "Modalidade": row[4] || "",
+    "Ano de Entrada": row[5] || "",
+    "Ano de Conclusão": row[6] || "",
+    "Data de Recebimento": fmtDate(row[7]),
+    "Observação": row[8] || ""
+  };
 }
 
 function respond(obj) {
