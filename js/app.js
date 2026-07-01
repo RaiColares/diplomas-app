@@ -1,34 +1,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyMsXfYeDy-Dz6jbAIzp-lk4AghLkF5-gWytqfkK_OK4jgktNoYpvO_wKliACseh0SO/exec";
 const API_KEY = "appcadastro123";
 
-function formatDateBR(val) {
-  if (!val) return "";
-  if (val instanceof Date) return val.toLocaleDateString("pt-BR");
-  let str = String(val);
-  if (str.includes("T")) {
-    const d = new Date(str);
-    if (!isNaN(d.getTime())) return d.toLocaleDateString("pt-BR");
-  }
-  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
-    const parts = str.split("T")[0].split("-");
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return str;
-}
-
-function formatDateISO(val) {
-  if (!val) return "";
-  if (val instanceof Date) return val.toISOString().split("T")[0];
-  let str = String(val);
-  if (str.includes("T")) {
-    const d = new Date(str);
-    if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
-  }
-  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.split("T")[0];
-  return str;
-}
-
-const COLSPAN = 10;
+const COLSPAN = 6;
 
 async function apiCall(params) {
   const fullParams = new URLSearchParams({ key: API_KEY, ...params });
@@ -61,16 +34,12 @@ function renderDiplomas(data) {
     return;
   }
   tableBody.innerHTML = data.map(d => `
-    <tr data-numero="${escapeAttr(d.Número || "")}" data-nome="${escapeAttr(d["Nome do Aluno"] || "")}" data-turno="${escapeAttr(d.Turno || "")}" data-curso="${escapeAttr(d.Curso || "")}" data-modalidade="${escapeAttr(d.Modalidade || "")}" data-anoentrada="${escapeAttr(d["Ano de Entrada"] || "")}" data-anoconclusao="${escapeAttr(d["Ano de Conclusão"] || "")}" data-datarecebimento="${escapeAttr(d["Data de Recebimento"] || "")}" data-observacao="${escapeAttr(d["Observação"] || "")}">
+    <tr data-numero="${escapeAttr(d.Número || "")}" data-nome="${escapeAttr(d["Nome do Aluno"] || "")}" data-turno="${escapeAttr(d.Turno || "")}" data-curso="${escapeAttr(d.Curso || "")}" data-anoinicio="${escapeAttr(d["Ano de Início"] || "")}">
       <td class="td-numero">${esc(d.Número || "")}</td>
       <td class="td-nome">${esc(d["Nome do Aluno"] || "")}</td>
       <td class="td-turno">${esc(d.Turno || "")}</td>
       <td class="td-curso">${esc(d.Curso || "")}</td>
-      <td class="td-modalidade">${esc(d.Modalidade || "")}</td>
-      <td class="td-anoEntrada">${esc(d["Ano de Entrada"] || "")}</td>
-      <td class="td-anoConclusao">${esc(d["Ano de Conclusão"] || "")}</td>
-      <td class="td-dataRecebimento">${esc(formatDateBR(d["Data de Recebimento"]))}</td>
-      <td class="td-observacao">${esc(d["Observação"] || "")}</td>
+      <td class="td-anoinicio">${esc(d["Ano de Início"] || "")}</td>
       <td class="td-acoes">
         <button class="action-btn btn-edit" onclick="window.editRow(this)">Editar</button>
         <button class="action-btn btn-delete" onclick="window.deleteRow(this)">Excluir</button>
@@ -103,11 +72,7 @@ window.editRow = function(btn) {
   document.getElementById("editNome").value = d.nome;
   document.getElementById("editTurno").value = d.turno;
   document.getElementById("editCurso").value = d.curso;
-  document.getElementById("editModalidade").value = d.modalidade;
-  document.getElementById("editAnoEntrada").value = d.anoentrada;
-  document.getElementById("editAnoConclusao").value = d.anoconclusao;
-  document.getElementById("editDataRecebimento").value = formatDateISO(d.datarecebimento);
-  document.getElementById("editObservacao").value = tr.getAttribute("data-observacao") || "";
+  document.getElementById("editAnoInicio").value = d.anoinicio;
 
   openModal();
 };
@@ -118,14 +83,8 @@ window.saveEdit = async function() {
     nome: document.getElementById("editNome").value.trim(),
     turno: document.getElementById("editTurno").value,
     curso: document.getElementById("editCurso").value.trim(),
-    modalidade: document.getElementById("editModalidade").value,
-    anoEntrada: document.getElementById("editAnoEntrada").value.trim(),
-    anoConclusao: document.getElementById("editAnoConclusao").value.trim(),
-    dataRecebimento: document.getElementById("editDataRecebimento").value,
-    observacao: document.getElementById("editObservacao").value.trim()
+    anoInicio: document.getElementById("editAnoInicio").value.trim()
   };
-
-  if (!validateForm(data)) return;
 
   const btn = document.getElementById("btnSaveEdit");
   btn.disabled = true;
@@ -168,32 +127,6 @@ window.deleteRow = async function(btn) {
   }
 };
 
-function validateForm(data) {
-  const fields = [
-    { key: "numero", label: "Número do Diploma" },
-    { key: "nome", label: "Nome do Aluno" },
-    { key: "turno", label: "Turno" },
-    { key: "curso", label: "Curso" },
-    { key: "modalidade", label: "Modalidade" },
-    { key: "anoEntrada", label: "Ano de Entrada" },
-    { key: "anoConclusao", label: "Ano de Conclusão" }
-  ];
-
-  for (const f of fields) {
-    if (!data[f.key]) {
-      showMessage(`Campo obrigatório: ${f.label}`, "error");
-      return false;
-    }
-  }
-
-  if (!/^\d+$/.test(data.numero)) {
-    showMessage("Número do diploma deve conter apenas dígitos.", "error");
-    return false;
-  }
-
-  return true;
-}
-
 function showMessage(text, type) {
   const msg = document.getElementById("message");
   if (!msg) return;
@@ -216,14 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
         nome: document.getElementById("nome").value.trim(),
         turno: document.getElementById("turno").value,
         curso: document.getElementById("curso").value.trim(),
-        modalidade: document.getElementById("modalidade").value,
-        anoEntrada: document.getElementById("anoEntrada").value,
-        anoConclusao: document.getElementById("anoConclusao").value,
-        dataRecebimento: document.getElementById("dataRecebimento").value,
-        observacao: document.getElementById("observacao").value.trim()
+        anoInicio: document.getElementById("anoInicio").value.trim()
       };
-
-      if (!validateForm(data)) return;
 
       const btn = form.querySelector("button");
       btn.disabled = true;
@@ -284,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!curso && !ano) return null;
       const params = {};
       if (curso) params.curso = curso;
-      if (ano) params.anoEntrada = ano;
+      if (ano) params.anoInicio = ano;
       return params;
     }
   }
@@ -323,7 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (btnAll) loadDiplomas();
 
-  // Modal event listeners
   const editForm = document.getElementById("editForm");
   if (editForm) {
     editForm.addEventListener("submit", (e) => {
@@ -333,9 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("btnCancelEdit")?.addEventListener("click", closeModal);
-
   document.querySelector(".modal-close")?.addEventListener("click", closeModal);
-
   document.getElementById("editModal")?.addEventListener("click", (e) => {
     if (e.target === document.getElementById("editModal")) closeModal();
   });

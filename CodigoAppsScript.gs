@@ -9,24 +9,19 @@ function doGet(e) {
   }
 
   if (e.parameter._action === "create") {
-    const { numero, nome, turno, curso, modalidade, anoEntrada, anoConclusao, dataRecebimento, observacao } = e.parameter;
-    if (!numero || !nome || !curso) {
-      return respond({ error: "Campos obrigatorios: numero, nome, curso" });
-    }
-    sheet.appendRow([numero, nome, turno || "", curso, modalidade || "", anoEntrada || "", anoConclusao || "", dataRecebimento || "", observacao || ""]);
+    const { numero, nome, turno, curso, anoInicio } = e.parameter;
+    sheet.appendRow([numero || "", nome || "", turno || "", curso || "", anoInicio || ""]);
     return respond({ success: true, message: "Diploma cadastrado!" });
   }
 
   if (e.parameter._action === "update") {
-    const { numero, nome, turno, curso, modalidade, anoEntrada, anoConclusao, dataRecebimento, observacao } = e.parameter;
-    if (!numero || !nome || !curso) {
-      return respond({ error: "Campos obrigatorios: numero, nome, curso" });
-    }
+    const { numero, nome, turno, curso, anoInicio } = e.parameter;
+    if (!numero) return respond({ error: "Numero obrigatorio" });
     const data = sheet.getDataRange().getValues();
     for (let i = 0; i < data.length; i++) {
       if (String(data[i][0]) === String(numero)) {
         const row = i + 1;
-        sheet.getRange(row, 1, 1, 9).setValues([[numero, nome, turno || "", curso, modalidade || "", anoEntrada || "", anoConclusao || "", dataRecebimento || "", observacao || ""]]);
+        sheet.getRange(row, 1, 1, 5).setValues([[numero, nome || "", turno || "", curso || "", anoInicio || ""]]);
         return respond({ success: true, message: "Diploma atualizado!" });
       }
     }
@@ -57,10 +52,10 @@ function doGet(e) {
 
   if (e.parameter.curso) {
     const termoCurso = e.parameter.curso.toLowerCase();
-    const termoAno = e.parameter.anoEntrada || "";
+    const termoAno = e.parameter.anoInicio || "";
     const filtered = data.filter(row => {
       const matchCurso = String(row[3]).toLowerCase().includes(termoCurso);
-      const matchAno = !termoAno || String(row[5]) === termoAno;
+      const matchAno = !termoAno || String(row[4]) === termoAno;
       return matchCurso && matchAno;
     });
     return respond(filtered.map(row => mapRow(row)));
@@ -79,22 +74,12 @@ function doPost(e) {
 }
 
 function mapRow(row) {
-  function fmtDate(val) {
-    if (val instanceof Date) {
-      return Utilities.formatDate(val, "GMT-3", "yyyy-MM-dd");
-    }
-    return val || "";
-  }
   return {
     "Número": row[0] || "",
     "Nome do Aluno": row[1] || "",
     "Turno": row[2] || "",
     "Curso": row[3] || "",
-    "Modalidade": row[4] || "",
-    "Ano de Entrada": row[5] || "",
-    "Ano de Conclusão": row[6] || "",
-    "Data de Recebimento": fmtDate(row[7]),
-    "Observação": row[8] || ""
+    "Ano de Início": row[4] || ""
   };
 }
 

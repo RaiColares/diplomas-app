@@ -20,19 +20,19 @@
       <form id="diplomaForm">
         <div class="form-row">
           <div class="form-group">
-            <label for="numero">Número do Diploma *</label>
-            <input type="text" id="numero" inputmode="numeric" pattern="[0-9]+" title="Apenas números" required>
+            <label for="numero">Número do Diploma</label>
+            <input type="text" id="numero">
           </div>
           <div class="form-group">
-            <label for="nome">Nome do Aluno *</label>
-            <input type="text" id="nome" required>
+            <label for="nome">Nome do Aluno</label>
+            <input type="text" id="nome">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="turno">Turno *</label>
-            <select id="turno" required>
+            <label for="turno">Turno</label>
+            <select id="turno">
               <option value="">Selecione...</option>
               <option value="Manhã">Manhã</option>
               <option value="Tarde">Tarde</option>
@@ -40,41 +40,14 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="curso">Curso *</label>
-            <input type="text" id="curso" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="modalidade">Modalidade *</label>
-            <select id="modalidade" required>
-              <option value="">Selecione...</option>
-              <option value="Integrado">Integrado</option>
-              <option value="Subsequente">Subsequente</option>
-              <option value="Ejatec">Ejatec</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="anoEntrada">Ano de Entrada *</label>
-            <input type="text" id="anoEntrada" inputmode="numeric" pattern="[0-9]{4}" title="Apenas 4 dígitos" placeholder="AAAA" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="anoConclusao">Ano de Conclusão *</label>
-            <input type="text" id="anoConclusao" inputmode="numeric" pattern="[0-9]{4}" title="Apenas 4 dígitos" placeholder="AAAA" required>
-          </div>
-          <div class="form-group">
-            <label for="dataRecebimento">Data de Recebimento</label>
-            <input type="date" id="dataRecebimento">
+            <label for="curso">Curso</label>
+            <input type="text" id="curso">
           </div>
         </div>
 
         <div class="form-group">
-          <label for="observacao">Observação</label>
-          <textarea id="observacao" rows="3"></textarea>
+          <label for="anoInicio">Ano de Início</label>
+          <input type="text" id="anoInicio" placeholder="AAAA">
         </div>
 
         <button type="submit">Cadastrar Diploma</button>

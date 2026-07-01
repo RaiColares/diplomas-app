@@ -27,7 +27,7 @@
         </div>
         <div id="searchCursoAnoField" class="search-field" style="display:none">
           <input type="text" id="searchCurso" placeholder="Nome do curso...">
-          <input type="text" id="searchAno" placeholder="Ano de entrada...">
+          <input type="text" id="searchAno" placeholder="Ano de início...">
         </div>
         <button id="btnSearch">Buscar</button>
         <button id="btnAll">Listar Todos</button>
@@ -41,11 +41,7 @@
               <th>Nome</th>
               <th>Turno</th>
               <th>Curso</th>
-              <th>Modalidade</th>
-              <th>Ano Entrada</th>
-              <th>Ano Conclusão</th>
-              <th>Data Recebimento</th>
-              <th>Observação</th>
+              <th>Ano Início</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -68,15 +64,15 @@
             <input type="text" id="editNumero" readonly>
           </div>
           <div class="form-group">
-            <label for="editNome">Nome do Aluno *</label>
-            <input type="text" id="editNome" required>
+            <label for="editNome">Nome do Aluno</label>
+            <input type="text" id="editNome">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="editTurno">Turno *</label>
-            <select id="editTurno" required>
+            <label for="editTurno">Turno</label>
+            <select id="editTurno">
               <option value="">Selecione...</option>
               <option value="Manhã">Manhã</option>
               <option value="Tarde">Tarde</option>
@@ -84,41 +80,14 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="editCurso">Curso *</label>
-            <input type="text" id="editCurso" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="editModalidade">Modalidade *</label>
-            <select id="editModalidade" required>
-              <option value="">Selecione...</option>
-              <option value="Integrado">Integrado</option>
-              <option value="Subsequente">Subsequente</option>
-              <option value="Ejatec">Ejatec</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="editAnoEntrada">Ano de Entrada *</label>
-            <input type="text" id="editAnoEntrada" inputmode="numeric" pattern="[0-9]{4}" title="Apenas 4 dígitos" placeholder="AAAA" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="editAnoConclusao">Ano de Conclusão *</label>
-            <input type="text" id="editAnoConclusao" inputmode="numeric" pattern="[0-9]{4}" title="Apenas 4 dígitos" placeholder="AAAA" required>
-          </div>
-          <div class="form-group">
-            <label for="editDataRecebimento">Data de Recebimento</label>
-            <input type="date" id="editDataRecebimento">
+            <label for="editCurso">Curso</label>
+            <input type="text" id="editCurso">
           </div>
         </div>
 
         <div class="form-group">
-          <label for="editObservacao">Observação</label>
-          <textarea id="editObservacao" rows="3"></textarea>
+          <label for="editAnoInicio">Ano de Início</label>
+          <input type="text" id="editAnoInicio" placeholder="AAAA">
         </div>
 
         <div class="modal-actions">
