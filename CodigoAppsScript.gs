@@ -1,4 +1,4 @@
-const SHEET_NAME = "Diplomas";
+const SHEET_NAME = "Alunos";
 const API_KEY = "appcadastro123";
 
 function doGet(e) {
@@ -11,7 +11,7 @@ function doGet(e) {
   if (e.parameter._action === "create") {
     const { numero, nome, turno, curso, anoInicio } = e.parameter;
     sheet.appendRow([numero || "", nome || "", turno || "", curso || "", anoInicio || ""]);
-    return respond({ success: true, message: "Diploma cadastrado!" });
+    return respond({ success: true, message: "Aluno cadastrado!" });
   }
 
   if (e.parameter._action === "update") {
@@ -22,10 +22,10 @@ function doGet(e) {
       if (String(data[i][0]) === String(numero)) {
         const row = i + 1;
         sheet.getRange(row, 1, 1, 5).setValues([[numero, nome || "", turno || "", curso || "", anoInicio || ""]]);
-        return respond({ success: true, message: "Diploma atualizado!" });
+        return respond({ success: true, message: "Aluno atualizado!" });
       }
     }
-    return respond({ error: "Diploma nao encontrado" });
+    return respond({ error: "Aluno nao encontrado" });
   }
 
   if (e.parameter._action === "delete") {
@@ -35,10 +35,10 @@ function doGet(e) {
     for (let i = 0; i < data.length; i++) {
       if (String(data[i][0]) === String(numero)) {
         sheet.deleteRow(i + 1);
-        return respond({ success: true, message: "Diploma excluido!" });
+        return respond({ success: true, message: "Aluno excluido!" });
       }
     }
-    return respond({ error: "Diploma nao encontrado" });
+    return respond({ error: "Aluno nao encontrado" });
   }
 
   const data = sheet.getDataRange().getValues();

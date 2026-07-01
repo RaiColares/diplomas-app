@@ -10,27 +10,27 @@ async function apiCall(params) {
   return res.json();
 }
 
-async function submitDiploma(data) {
+async function submitAluno(data) {
   return apiCall({ _action: "create", ...data });
 }
 
-async function updateDiploma(data) {
+async function updateAluno(data) {
   return apiCall({ _action: "update", ...data });
 }
 
-async function deleteDiploma(numero) {
+async function deleteAluno(numero) {
   return apiCall({ _action: "delete", numero });
 }
 
-async function fetchDiplomas(paramsObj = {}) {
+async function fetchAlunos(paramsObj = {}) {
   return apiCall(paramsObj);
 }
 
-function renderDiplomas(data) {
+function renderAlunos(data) {
   const tableBody = document.getElementById("tableBody");
   if (!tableBody) return;
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Nenhum diploma encontrado.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Nenhum aluno encontrado.</td></tr>`;
     return;
   }
   tableBody.innerHTML = data.map(d => `
@@ -91,14 +91,14 @@ window.saveEdit = async function() {
   btn.textContent = "Salvando...";
 
   try {
-    const result = await updateDiploma(data);
+    const result = await updateAluno(data);
     if (result.error) {
       showMessage(result.error, "error");
       return;
     }
-    showMessage("Diploma atualizado com sucesso!", "success");
+    showMessage("Aluno atualizado com sucesso!", "success");
     closeModal();
-    loadDiplomas();
+    loadAlunos();
   } catch (err) {
     showMessage("Erro ao atualizar. Tente novamente.", "error");
   } finally {
@@ -112,16 +112,16 @@ window.deleteRow = async function(btn) {
   const nome = tr.dataset.nome;
   const numero = tr.dataset.numero;
 
-  if (!confirm(`Tem certeza que deseja excluir o diploma de "${nome}"?`)) return;
+  if (!confirm(`Tem certeza que deseja excluir o aluno de "${nome}"?`)) return;
 
   try {
-    const result = await deleteDiploma(numero);
+    const result = await deleteAluno(numero);
     if (result.error) {
       showMessage(result.error, "error");
       return;
     }
-    showMessage("Diploma excluído com sucesso!", "success");
-    loadDiplomas();
+    showMessage("Aluno excluído com sucesso!", "success");
+    loadAlunos();
   } catch (err) {
     showMessage("Erro ao excluir. Tente novamente.", "error");
   }
@@ -137,7 +137,7 @@ function showMessage(text, type) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("diplomaForm");
+  const form = document.getElementById("alunoForm");
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.textContent = "Enviando...";
 
       try {
-        const result = await submitDiploma(data);
+        const result = await submitAluno(data);
         if (result.error) {
           msg.className = "message error";
           msg.textContent = result.error;
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         msg.className = "message success";
-        msg.textContent = "Diploma cadastrado com sucesso!";
+        msg.textContent = "Aluno cadastrado com sucesso!";
         msg.style.display = "block";
         form.reset();
       } catch (err) {
@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         msg.style.display = "block";
       } finally {
         btn.disabled = false;
-        btn.textContent = "Cadastrar Diploma";
+        btn.textContent = "Cadastrar Aluno";
       }
     });
   }
@@ -216,28 +216,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function loadDiplomas(paramsObj = null) {
+  async function loadAlunos(paramsObj = null) {
     if (tableBody) tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Carregando...</td></tr>`;
     try {
-      const data = paramsObj ? await fetchDiplomas(paramsObj) : await fetchDiplomas();
+      const data = paramsObj ? await fetchAlunos(paramsObj) : await fetchAlunos();
       if (!tableBody) return;
       if (data.error) {
         tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Erro: ${data.error}</td></tr>`;
         return;
       }
-      renderDiplomas(data);
+      renderAlunos(data);
     } catch (err) {
       if (tableBody) tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Erro ao carregar dados.</td></tr>`;
     }
   }
 
-  window.loadDiplomas = loadDiplomas;
+  window.loadAlunos = loadAlunos;
 
-  if (btnAll) btnAll.addEventListener("click", () => loadDiplomas());
+  if (btnAll) btnAll.addEventListener("click", () => loadAlunos());
   if (btnSearch) {
     btnSearch.addEventListener("click", () => {
       const params = buildSearchParams();
-      loadDiplomas(params);
+      loadAlunos(params);
     });
   }
   [searchNome, searchCurso, searchAno].forEach(input => {
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  if (btnAll) loadDiplomas();
+  if (btnAll) loadAlunos();
 
   const editForm = document.getElementById("editForm");
   if (editForm) {
