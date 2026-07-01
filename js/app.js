@@ -2,6 +2,150 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzWfPle_9c2tou9kPPva4E7
 const API_KEY = "appcadastro123";
 
 const COLSPAN = 6;
+const STORAGE_KEY = "cursosPersonalizados";
+
+const CURSOS_FIXOS = [
+  "ADMINISTRAÇÃO",
+  "ARTE DRAMÁTICA",
+  "CIÊNCIAS DE DADOS",
+  "COMÉRCIO",
+  "CONTABILIDADE",
+  "DESENVOLVIMENTO DE SISTEMAS",
+  "EDUCAÇÃO ESPECIAL",
+  "EVENTOS",
+  "INFORMÁTICA",
+  "LOGÍSTICA",
+  "MARKETING",
+  "RECURSOS HUMANOS",
+  "REDES DE COMPUTADORES",
+  "SECRETARIADO"
+];
+
+function getCursosPersonalizados() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function salvarCursosPersonalizados(lista) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
+}
+
+function getTodosCursos() {
+  return [...CURSOS_FIXOS, ...getCursosPersonalizados()];
+}
+
+function carregarSelectCursos(selectId, placeholder, incluirAdicionar) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  const valorAtual = select.value;
+  const cursos = getTodosCursos();
+
+  select.innerHTML = "";
+
+  if (placeholder !== null) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = placeholder;
+    select.appendChild(opt);
+  }
+
+  cursos.forEach(curso => {
+    const opt = document.createElement("option");
+    opt.value = curso;
+    opt.textContent = curso;
+    select.appendChild(opt);
+  });
+
+  if (incluirAdicionar) {
+    const opt = document.createElement("option");
+    opt.value = "ADICIONAR_CURSO";
+    opt.textContent = "--- ADICIONAR CURSO ---";
+    select.appendChild(opt);
+  }
+
+  if (valorAtual && cursos.includes(valorAtual)) {
+    select.value = valorAtual;
+  }
+}
+
+function carregarTodosSelectsCursos() {
+  carregarSelectCursos("curso", "Selecione...", true);
+  carregarSelectCursos("editCurso", "Selecione...", true);
+  carregarSelectCursos("searchCurso", "Todos os cursos", false);
+}
+
+function adicionarCursoPersonalizado(nome) {
+  nome = nome.toUpperCase().trim();
+  if (!nome) return false;
+
+  const personalizados = getCursosPersonalizados();
+  const todos = getTodosCursos();
+
+  if (todos.includes(nome)) {
+    showMessage("Este curso já existe na lista.", "error");
+    return false;
+  }
+
+  personalizados.push(nome);
+  salvarCursosPersonalizados(personalizados);
+  carregarTodosSelectsCursos();
+
+  const msg = document.getElementById("message");
+  if (msg) {
+    msg.className = "message success";
+    msg.textContent = `Curso "${nome}" adicionado com sucesso!`;
+    msg.style.display = "block";
+    setTimeout(() => msg.style.display = "none", 3000);
+  }
+
+  return true;
+}
+
+function configurarCursoSelect(selectId, customInputId) {
+  const select = document.getElementById(selectId);
+  const custom = document.getElementById(customInputId);
+  if (!select || !custom) return;
+
+  select.addEventListener("change", () => {
+    if (select.value === "ADICIONAR_CURSO") {
+      custom.style.display = "block";
+      custom.focus();
+    } else {
+      custom.style.display = "none";
+      custom.value = "";
+    }
+  });
+
+  custom.addEventListener("input", () => {
+    custom.value = custom.value.toUpperCase();
+  });
+
+  custom.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const nome = custom.value.trim();
+      if (nome && adicionarCursoPersonalizado(nome)) {
+        select.value = nome;
+        custom.style.display = "none";
+        custom.value = "";
+      }
+    }
+  });
+
+  custom.addEventListener("blur", () => {
+    const nome = custom.value.trim();
+    if (nome && select.value === "ADICIONAR_CURSO") {
+      if (adicionarCursoPersonalizado(nome)) {
+        select.value = nome;
+        custom.style.display = "none";
+        custom.value = "";
+      }
+    }
+  });
+}
 
 async function apiCall(params) {
   const fullParams = new URLSearchParams({ key: API_KEY, ...params });
@@ -71,18 +215,42 @@ window.editRow = function(btn) {
   document.getElementById("editNumero").value = d.numero;
   document.getElementById("editNome").value = d.nome;
   document.getElementById("editTurno").value = d.turno;
-  document.getElementById("editCurso").value = d.curso;
+
+  const editCurso = document.getElementById("editCurso");
+  const editCursoCustom = document.getElementById("editCursoCustom");
+  const todos = getTodosCursos();
+  if (todos.includes(d.curso)) {
+    editCurso.value = d.curso;
+    editCursoCustom.style.display = "none";
+    editCursoCustom.value = "";
+  } else if (d.curso) {
+    editCurso.value = "ADICIONAR_CURSO";
+    editCursoCustom.value = d.curso;
+    editCursoCustom.style.display = "block";
+  } else {
+    editCurso.value = "";
+    editCursoCustom.style.display = "none";
+    editCursoCustom.value = "";
+  }
+
   document.getElementById("editAnoInicio").value = d.anoinicio;
 
   openModal();
 };
 
 window.saveEdit = async function() {
+  const editCurso = document.getElementById("editCurso");
+  const editCursoCustom = document.getElementById("editCursoCustom");
+  let curso = editCurso.value;
+  if (curso === "ADICIONAR_CURSO") {
+    curso = editCursoCustom.value.trim().toUpperCase();
+  }
+
   const data = {
     numero: document.getElementById("editNumero").value.trim(),
     nome: document.getElementById("editNome").value.trim(),
     turno: document.getElementById("editTurno").value,
-    curso: document.getElementById("editCurso").value.trim(),
+    curso: curso,
     anoInicio: document.getElementById("editAnoInicio").value.trim()
   };
 
@@ -137,6 +305,10 @@ function showMessage(text, type) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  carregarTodosSelectsCursos();
+  configurarCursoSelect("curso", "cursoCustom");
+  configurarCursoSelect("editCurso", "editCursoCustom");
+
   const form = document.getElementById("alunoForm");
   if (form) {
     form.addEventListener("submit", async (e) => {
@@ -144,11 +316,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const msg = document.getElementById("message");
       msg.style.display = "none";
 
+      const cursoSelect = document.getElementById("curso");
+      const cursoCustom = document.getElementById("cursoCustom");
+      let curso = cursoSelect.value;
+      if (curso === "ADICIONAR_CURSO") {
+        curso = cursoCustom.value.trim().toUpperCase();
+      }
+
       const data = {
         numero: document.getElementById("numero").value.trim(),
         nome: document.getElementById("nome").value.trim(),
         turno: document.getElementById("turno").value,
-        curso: document.getElementById("curso").value.trim(),
+        curso: curso,
         anoInicio: document.getElementById("anoInicio").value.trim()
       };
 
@@ -168,6 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
         msg.textContent = "Aluno cadastrado com sucesso!";
         msg.style.display = "block";
         form.reset();
+        document.getElementById("cursoCustom").style.display = "none";
       } catch (err) {
         msg.className = "message error";
         msg.textContent = "Erro ao cadastrar. Tente novamente.";
@@ -206,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const nome = searchNome.value.trim();
       return nome ? { nome } : null;
     } else {
-      const curso = searchCurso.value.trim();
+      const curso = searchCurso.value;
       const ano = searchAno.value.trim();
       if (!curso && !ano) return null;
       const params = {};
@@ -240,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
       loadAlunos(params);
     });
   }
-  [searchNome, searchCurso, searchAno].forEach(input => {
+  [searchNome, searchAno].forEach(input => {
     if (input) {
       input.addEventListener("keyup", (e) => {
         if (e.key === "Enter") btnSearch.click();

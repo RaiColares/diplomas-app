@@ -26,7 +26,9 @@
           <input type="text" id="searchNome" placeholder="Digite o nome do aluno...">
         </div>
         <div id="searchCursoAnoField" class="search-field" style="display:none">
-          <input type="text" id="searchCurso" placeholder="Nome do curso...">
+          <select id="searchCurso">
+            <option value="">Todos os cursos</option>
+          </select>
           <input type="text" id="searchAno" placeholder="Ano de início...">
         </div>
         <button id="btnSearch">Buscar</button>
@@ -81,7 +83,10 @@
           </div>
           <div class="form-group">
             <label for="editCurso">Curso</label>
-            <input type="text" id="editCurso">
+            <select id="editCurso">
+              <option value="">Selecione...</option>
+            </select>
+            <input type="text" id="editCursoCustom" class="curso-custom" placeholder="Digite o nome do novo curso..." style="display:none">
           </div>
         </div>
 
