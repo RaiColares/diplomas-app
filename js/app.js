@@ -1,62 +1,56 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwfw7DceNbCzFg6pIWw8_bDVIcpceOEHPi8_EiMANzU6mriad1lXa4d8sMOjNjGM-az/exec";
 const API_KEY = "appcadastro123";
 
-function formatDateBR(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr + "T12:00:00");
-  if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString("pt-BR");
+function formatDateBR(val) {
+  if (!val) return "";
+  if (val instanceof Date) return val.toLocaleDateString("pt-BR");
+  let str = String(val);
+  if (str.includes("T")) {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) return d.toLocaleDateString("pt-BR");
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const parts = str.split("T")[0].split("-");
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return str;
 }
 
-function formatDateISO(dateStr) {
-  if (!dateStr) return "";
-  const parts = dateStr.split("/");
-  if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
-  return dateStr;
+function formatDateISO(val) {
+  if (!val) return "";
+  if (val instanceof Date) return val.toISOString().split("T")[0];
+  let str = String(val);
+  if (str.includes("T")) {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.split("T")[0];
+  return str;
 }
 
 const COLSPAN = 10;
 
+async function apiCall(params) {
+  const fullParams = new URLSearchParams({ key: API_KEY, ...params });
+  const res = await fetch(`${API_URL}?${fullParams}`);
+  if (!res.ok) throw new Error("Erro na requisicao");
+  return res.json();
+}
+
 async function submitDiploma(data) {
-  const params = new URLSearchParams({ key: API_KEY, ...data });
-  const res = await fetch(API_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params
-  });
-  if (res.type === "opaque") return { success: true };
-  return res.json();
-}
-
-async function fetchDiplomas(paramsObj = {}) {
-  const params = new URLSearchParams({ key: API_KEY, ...paramsObj });
-  const res = await fetch(`${API_URL}?${params}`);
-  return res.json();
-}
-
-async function deleteDiploma(numero) {
-  const params = new URLSearchParams({ key: API_KEY, _action: "delete", numero });
-  const res = await fetch(API_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params
-  });
-  if (res.type === "opaque") return { success: true };
-  return res.json();
+  return apiCall({ _action: "create", ...data });
 }
 
 async function updateDiploma(data) {
-  const params = new URLSearchParams({ key: API_KEY, _action: "update", ...data });
-  const res = await fetch(API_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params
-  });
-  if (res.type === "opaque") return { success: true };
-  return res.json();
+  return apiCall({ _action: "update", ...data });
+}
+
+async function deleteDiploma(numero) {
+  return apiCall({ _action: "delete", numero });
+}
+
+async function fetchDiplomas(paramsObj = {}) {
+  return apiCall(paramsObj);
 }
 
 const TURNOS = ["Manhã", "Tarde", "Noite"];
@@ -113,11 +107,6 @@ window.editRow = function(btn) {
   if (tr.classList.contains("editing")) return;
 
   const fields = ["nome", "turno", "curso", "modalidade", "anoEntrada", "anoConclusao", "dataRecebimento", "observacao"];
-  const labels = {
-    nome: "Nome do Aluno", turno: "Turno", curso: "Curso",
-    modalidade: "Modalidade", anoEntrada: "Ano de Entrada",
-    anoConclusao: "Ano de Conclusão", dataRecebimento: "Data de Recebimento", observacao: "Observação"
-  };
 
   fields.forEach(f => {
     const td = tr.querySelector(`.td-${f}`);
@@ -130,7 +119,7 @@ window.editRow = function(btn) {
       td.appendChild(createSelect(val, MODALIDADES));
     } else {
       const input = document.createElement("input");
-      input.type = f === "anoEntrada" || f === "anoConclusao" ? "text" : "text";
+      input.type = "text";
       input.value = f === "dataRecebimento" ? formatDateISO(val) : val;
       if (f === "anoEntrada" || f === "anoConclusao") input.placeholder = "AAAA";
       td.innerHTML = "";
@@ -165,7 +154,11 @@ window.saveRow = async function(btn) {
   }
 
   try {
-    await updateDiploma(data);
+    const result = await updateDiploma(data);
+    if (result.error) {
+      showMessage(result.error, "error");
+      return;
+    }
     showMessage("Diploma atualizado com sucesso!", "success");
     loadDiplomas();
   } catch (err) {
@@ -173,7 +166,7 @@ window.saveRow = async function(btn) {
   }
 };
 
-window.cancelEdit = function(btn) {
+window.cancelEdit = function() {
   loadDiplomas();
 };
 
@@ -185,7 +178,11 @@ window.deleteRow = async function(btn) {
   if (!confirm(`Tem certeza que deseja excluir o diploma de "${nome}"?`)) return;
 
   try {
-    await deleteDiploma(numero);
+    const result = await deleteDiploma(numero);
+    if (result.error) {
+      showMessage(result.error, "error");
+      return;
+    }
     showMessage("Diploma excluído com sucesso!", "success");
     loadDiplomas();
   } catch (err) {
@@ -234,7 +231,13 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.textContent = "Enviando...";
 
       try {
-        await submitDiploma(data);
+        const result = await submitDiploma(data);
+        if (result.error) {
+          msg.className = "message error";
+          msg.textContent = result.error;
+          msg.style.display = "block";
+          return;
+        }
         msg.className = "message success";
         msg.textContent = "Diploma cadastrado com sucesso!";
         msg.style.display = "block";
