@@ -170,6 +170,50 @@ async function fetchAlunos(paramsObj = {}) {
   return apiCall(paramsObj);
 }
 
+let allData = [];
+let currentPage = 1;
+let pageSize = 10;
+
+async function renderCoursePanel() {
+  const panel = document.getElementById("coursePanel");
+  if (!panel) return;
+  panel.innerHTML = `<div class="course-panel-empty">Carregando...</div>`;
+  try {
+    const data = await fetchAlunos();
+    if (data.error || !Array.isArray(data)) {
+      panel.innerHTML = `<div class="course-panel-empty">Nenhum curso cadastrado.</div>`;
+      return;
+    }
+    const counts = {};
+    data.forEach(d => {
+      const curso = (d.Curso || "").trim().toUpperCase();
+      if (curso) counts[curso] = (counts[curso] || 0) + 1;
+    });
+    const cursos = Object.keys(counts).sort();
+    if (cursos.length === 0) {
+      panel.innerHTML = `<div class="course-panel-empty">Nenhum curso cadastrado.</div>`;
+      return;
+    }
+    const total = data.length;
+    const rows = cursos.map(c => `
+      <div class="course-row">
+        <span class="course-name">${esc(c)}</span>
+        <span class="course-count">${counts[c]} aluno${counts[c] !== 1 ? 's' : ''}</span>
+      </div>
+    `).join("");
+    panel.innerHTML = `
+      <h2>Cursos Cadastrados</h2>
+      <div class="course-grid">${rows}</div>
+      <div class="course-panel-footer">
+        <span>Total de Alunos</span>
+        <span>${total}</span>
+      </div>
+    `;
+  } catch {
+    panel.innerHTML = `<div class="course-panel-empty">Erro ao carregar dados.</div>`;
+  }
+}
+
 function renderAlunos(data) {
   const tableBody = document.getElementById("tableBody");
   if (!tableBody) return;
@@ -191,6 +235,41 @@ function renderAlunos(data) {
     </tr>
   `).join("");
 }
+
+function renderPaginated() {
+  const totalPages = Math.ceil(allData.length / pageSize) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+  renderAlunos(allData.slice(start, end));
+  renderPaginationControls(totalPages);
+}
+
+function renderPaginationControls(totalPages) {
+  const pagination = document.getElementById("pagination");
+  if (!pagination) return;
+  if (totalPages <= 1) {
+    pagination.innerHTML = "";
+    return;
+  }
+  let html = `<button onclick="window.changePage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>Anterior</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button onclick="window.changePage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+  }
+  html += `<button onclick="window.changePage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>Próximo</button>`;
+  pagination.innerHTML = html;
+}
+
+window.changePage = function(page) {
+  currentPage = page;
+  renderPaginated();
+};
+
+window.changePageSize = function(size) {
+  pageSize = parseInt(size);
+  currentPage = 1;
+  renderPaginated();
+};
 
 function escapeAttr(str) {
   return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -354,6 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
         msg.style.display = "block";
         form.reset();
         document.getElementById("cursoCustom").style.display = "none";
+        renderCoursePanel();
       } catch (err) {
         msg.className = "message error";
         msg.textContent = "Erro ao cadastrar. Tente novamente.";
@@ -411,7 +491,9 @@ document.addEventListener("DOMContentLoaded", () => {
         tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Erro: ${data.error}</td></tr>`;
         return;
       }
-      renderAlunos(data);
+      allData = data;
+      currentPage = 1;
+      renderPaginated();
     } catch (err) {
       if (tableBody) tableBody.innerHTML = `<tr><td colspan="${COLSPAN}">Erro ao carregar dados.</td></tr>`;
     }
@@ -449,4 +531,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("editModal")?.addEventListener("click", (e) => {
     if (e.target === document.getElementById("editModal")) closeModal();
   });
+
+  renderCoursePanel();
+
+  const pageSizeSelect = document.getElementById("pageSize");
+  if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", () => {
+      window.changePageSize(pageSizeSelect.value);
+    });
+  }
 });
