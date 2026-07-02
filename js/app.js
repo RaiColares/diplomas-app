@@ -252,11 +252,19 @@ function renderPaginationControls(totalPages) {
     pagination.innerHTML = "";
     return;
   }
-  let html = `<button onclick="window.changePage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>Anterior</button>`;
-  for (let i = 1; i <= totalPages; i++) {
+  const blockSize = 10;
+  const currentBlock = Math.ceil(currentPage / blockSize);
+  const blockStart = (currentBlock - 1) * blockSize + 1;
+  const blockEnd = Math.min(blockStart + blockSize - 1, totalPages);
+
+  let html = "";
+  html += `<button onclick="window.changePage(1)" ${currentPage <= 1 ? 'disabled' : ''}>Início</button>`;
+  html += `<button onclick="window.changePage(${blockStart - 1})" ${blockStart <= 1 ? 'disabled' : ''}>Anterior</button>`;
+  for (let i = blockStart; i <= blockEnd; i++) {
     html += `<button onclick="window.changePage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
   }
-  html += `<button onclick="window.changePage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>Próximo</button>`;
+  html += `<button onclick="window.changePage(${blockEnd + 1})" ${blockEnd >= totalPages ? 'disabled' : ''}>Próximo</button>`;
+  html += `<button onclick="window.changePage(${totalPages})" ${currentPage >= totalPages ? 'disabled' : ''}>Último</button>`;
   pagination.innerHTML = html;
 }
 
