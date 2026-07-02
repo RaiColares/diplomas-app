@@ -500,6 +500,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       allData = data;
+      allData.sort((a, b) => parseInt(a.Número) - parseInt(b.Número));
       currentPage = 1;
       renderPaginated();
     } catch (err) {
