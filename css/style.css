@@ -150,6 +150,15 @@ button:hover {
   flex: 1;
 }
 
+#searchAno {
+  min-width: 130px;
+  width: 130px;
+}
+
+#searchAno::placeholder {
+  font-size: 0.8em;
+}
+
 .message {
   margin-top: 20px;
   padding: 12px;
