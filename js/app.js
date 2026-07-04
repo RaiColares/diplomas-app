@@ -1,5 +1,107 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzWfPle_9c2tou9kPPva4E7BodCXxZwY7i6JP8ptglQEsk6IcavLuZ8dkiaEJXRT78g/exec";
-const API_KEY = "appcadastro123";
+const API_URL = "https://script.google.com/macros/s/AKfycbyPvARO2oTejrIy3Jk3QnsiYlPtAh0M9DYsEAG2choXQQsIb5gQ7d019aOkWHS-y4Ac/exec";
+
+let pendingAction = null;
+let authData = null;
+
+function loadAuth() {
+  try {
+    const stored = sessionStorage.getItem("authData");
+    if (stored) authData = JSON.parse(stored);
+  } catch { authData = null; }
+}
+
+function saveAuth(senha) {
+  authData = { senha };
+  sessionStorage.setItem("authData", JSON.stringify(authData));
+  updateAuthUI();
+}
+
+function clearAuth() {
+  authData = null;
+  sessionStorage.removeItem("authData");
+  updateAuthUI();
+}
+
+function isAuthenticated() {
+  return authData !== null;
+}
+
+function getAuthParams() {
+  return authData ? { _senha: authData.senha } : {};
+}
+
+function openLoginModal() {
+  document.getElementById("loginModal")?.classList.add("show");
+  setTimeout(() => document.getElementById("loginPass")?.focus(), 100);
+}
+
+function closeLoginModal() {
+  document.getElementById("loginModal")?.classList.remove("show");
+  const err = document.getElementById("loginError");
+  if (err) err.style.display = "none";
+  const pass = document.getElementById("loginPass");
+  if (pass) pass.value = "";
+  pendingAction = null;
+}
+
+async function handleLogin() {
+  const senha = document.getElementById("loginPass").value;
+  const errorEl = document.getElementById("loginError");
+
+  if (!senha) {
+    errorEl.textContent = "Digite a senha de administrador.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  try {
+    const result = await apiCall({ _action: "auth", _senha: senha });
+    if (result.success) {
+      saveAuth(senha);
+      closeLoginModal();
+      if (pendingAction) {
+        const action = pendingAction;
+        pendingAction = null;
+        action();
+      }
+    } else {
+      errorEl.textContent = "Senha inválida.";
+      errorEl.style.display = "block";
+    }
+  } catch {
+    errorEl.textContent = "Erro ao conectar. Tente novamente.";
+    errorEl.style.display = "block";
+  }
+}
+
+function updateAuthUI() {
+  const existing = document.getElementById("logoutBtn");
+  if (isAuthenticated()) {
+    if (!existing) {
+      const nav = document.querySelector("nav");
+      if (nav) {
+        const btn = document.createElement("a");
+        btn.id = "logoutBtn";
+        btn.href = "#";
+        btn.textContent = "Sair";
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          clearAuth();
+          const msg = document.getElementById("message");
+          if (msg) {
+            msg.className = "message success";
+            msg.textContent = "Sessão encerrada.";
+            msg.style.display = "block";
+            setTimeout(() => msg.style.display = "none", 3000);
+          }
+        });
+        nav.appendChild(btn);
+      }
+    }
+  } else {
+    if (existing) existing.remove();
+  }
+}
 
 const COLSPAN = 6;
 const STORAGE_KEY = "cursosPersonalizados";
@@ -148,22 +250,22 @@ function configurarCursoSelect(selectId, customInputId) {
 }
 
 async function apiCall(params) {
-  const fullParams = new URLSearchParams({ key: API_KEY, ...params });
+  const fullParams = new URLSearchParams(params);
   const res = await fetch(`${API_URL}?${fullParams}`);
   if (!res.ok) throw new Error("Erro na requisicao");
   return res.json();
 }
 
 async function submitAluno(data) {
-  return apiCall({ _action: "create", ...data });
+  return apiCall({ _action: "create", ...data, ...getAuthParams() });
 }
 
 async function updateAluno(data) {
-  return apiCall({ _action: "update", ...data });
+  return apiCall({ _action: "update", ...data, ...getAuthParams() });
 }
 
 async function deleteAluno(numero) {
-  return apiCall({ _action: "delete", numero });
+  return apiCall({ _action: "delete", numero, ...getAuthParams() });
 }
 
 async function fetchAlunos(paramsObj = {}) {
@@ -296,6 +398,11 @@ function closeModal() {
 }
 
 window.editRow = function(btn) {
+  if (!isAuthenticated()) {
+    pendingAction = () => window.editRow(btn);
+    openLoginModal();
+    return;
+  }
   const tr = btn.closest("tr");
   const d = tr.dataset;
 
@@ -363,6 +470,11 @@ window.saveEdit = async function() {
 };
 
 window.deleteRow = async function(btn) {
+  if (!isAuthenticated()) {
+    pendingAction = () => window.deleteRow(btn);
+    openLoginModal();
+    return;
+  }
   const tr = btn.closest("tr");
   const nome = tr.dataset.nome;
   const numero = tr.dataset.numero;
@@ -406,6 +518,13 @@ document.addEventListener("DOMContentLoaded", () => {
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      if (!isAuthenticated()) {
+        pendingAction = () => form.dispatchEvent(new Event("submit"));
+        openLoginModal();
+        return;
+      }
+
       const msg = document.getElementById("message");
       msg.style.display = "none";
 
@@ -549,4 +668,18 @@ document.addEventListener("DOMContentLoaded", () => {
       window.changePageSize(pageSizeSelect.value);
     });
   }
+
+  loadAuth();
+  updateAuthUI();
+
+  document.getElementById("loginModal")?.addEventListener("click", (e) => {
+    if (e.target === document.getElementById("loginModal")) closeLoginModal();
+  });
+
+  document.getElementById("loginPass")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleLogin();
+    }
+  });
 });

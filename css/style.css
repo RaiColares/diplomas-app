@@ -449,6 +449,20 @@ td input:focus, td select:focus {
   color: #555;
 }
 
+.login-modal-content {
+  max-width: 420px;
+}
+
+.login-subtitle {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 0.95em;
+}
+
+#logoutBtn {
+  margin-left: auto;
+}
+
 @media (max-width: 600px) {
   .form-row {
     flex-direction: column;

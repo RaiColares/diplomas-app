@@ -118,6 +118,23 @@
     </div>
   </div>
 
+  <div id="loginModal" class="modal">
+    <div class="modal-content login-modal-content">
+      <span class="modal-close" onclick="closeLoginModal()">&times;</span>
+      <h2>Acesso Restrito</h2>
+      <p class="login-subtitle">Digite a senha de administrador</p>
+      <div class="form-group">
+        <label for="loginPass">Senha</label>
+        <input type="password" id="loginPass" placeholder="Digite a senha">
+      </div>
+      <div id="loginError" class="message error" style="display:none"></div>
+      <div class="modal-actions">
+        <button onclick="handleLogin()">Entrar</button>
+        <button class="btn-secondary" onclick="closeLoginModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/app.js"></script>
 </body>
 </html>
