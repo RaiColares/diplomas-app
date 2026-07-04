@@ -449,6 +449,29 @@ td input:focus, td select:focus {
   color: #555;
 }
 
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  padding-right: 40px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 4px;
+  margin: 0;
+  line-height: 1;
+  z-index: 1;
+}
+
 .login-modal-content {
   max-width: 420px;
 }

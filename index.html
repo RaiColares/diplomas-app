@@ -72,7 +72,10 @@
       <p class="login-subtitle">Digite a senha de administrador</p>
       <div class="form-group">
         <label for="loginPass">Senha</label>
-        <input type="password" id="loginPass" placeholder="Digite a senha">
+        <div class="password-wrapper">
+          <input type="password" id="loginPass" placeholder="Digite a senha">
+          <button type="button" class="toggle-password" onclick="mostrarSenha(this)" tabindex="-1">👁</button>
+        </div>
       </div>
       <div id="loginError" class="message error" style="display:none"></div>
       <div class="modal-actions">

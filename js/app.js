@@ -74,6 +74,14 @@ async function handleLogin() {
   }
 }
 
+function mostrarSenha(btn) {
+  const wrapper = btn.closest(".password-wrapper");
+  const input = wrapper.querySelector("input");
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+  btn.textContent = isPassword ? "🙈" : "👁";
+}
+
 function updateAuthUI() {
   const existing = document.getElementById("logoutBtn");
   if (isAuthenticated()) {
